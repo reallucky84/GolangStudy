@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
+	"strconv"
 	"time"
+)
+
+const (
+	errorMsgInput     = "0~9 사이의 겹치지않는 3자리 숫자를 입력하세요."
+	errorMsgWrong     = "잘못 입력하셨습니다."
+	errorMsgDuplicate = "겹치지않는 3자리 숫자를 입력하세요."
 )
 
 func main() {
@@ -21,11 +27,11 @@ func main() {
 }
 
 func makeNumber() [3]int {
-	var gameNum [3]int
+	gameNum := [3]int{-1, -1, -1}
 	for i := 0; i < 3; i++ {
+		rand.Seed(time.Now().UnixNano())
 		for {
-			rand.Seed(time.Now().UnixNano())
-			tmpNum := rand.Intn(9) + 1
+			tmpNum := rand.Intn(10)
 			if checkIfUsableNum(tmpNum, gameNum) {
 				gameNum[i] = tmpNum
 				break
@@ -45,41 +51,49 @@ func checkIfUsableNum(num int, gameNum [3]int) bool {
 }
 
 func getInputNumber() [3]int {
-	fmt.Println("숫자를 입력하세요.")
+	fmt.Println(errorMsgInput)
 	var resultNum [3]int
-	var isOk bool
+
+outloop:
 	for {
-		var inputNum int
-		_, err := fmt.Scanf("%d", &inputNum)
+		var input string
+		_, err := fmt.Scanln(&input)
 
 		if err != nil {
-			isOk, resultNum = validateInput(inputNum)
-			if isOk {
-				break
+			fmt.Println(errorMsgWrong)
+			continue
+		}
+
+		if len(input) < 3 || 3 < len(input) {
+			fmt.Println(errorMsgWrong)
+			continue
+		}
+
+		inputNum, err := strconv.Atoi(input)
+		if err != nil {
+			fmt.Println(errorMsgWrong)
+			continue
+		}
+
+		if 0 < inputNum && inputNum <= 999 {
+			i := 0
+			for inputNum > 0 {
+				tmpNum := inputNum % 10
+				if !checkIfUsableNum(tmpNum, resultNum) {
+					fmt.Println(errorMsgDuplicate)
+					continue outloop
+				}
+				resultNum[i] = tmpNum
+				inputNum /= 10
+				i++
 			}
-			fmt.Println("inputNum=", inputNum)
+			resultNum[0], resultNum[2] = resultNum[2], resultNum[0]
+			break
 		} else {
-			log.Print(err)
+			fmt.Println(errorMsgDuplicate)
 		}
 	}
-
 	return resultNum
-}
-
-func validateInput(inputNum int) (bool, [3]int) {
-	var resultNum [3]int
-	if 0 < inputNum && inputNum <= 999 {
-		i := 0
-		for inputNum > 9 {
-			resultNum[i] %= 10
-			inputNum /= 10
-			i++
-		}
-		return true, resultNum
-	} else {
-		fmt.Println("잘못 입력하셨습니다.")
-		return false, resultNum
-	}
 }
 
 func showResult(inputNum [3]int) {
