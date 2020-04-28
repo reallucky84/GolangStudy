@@ -12,26 +12,50 @@ const (
 	errorMsgDuplicate = "겹치지않는 3자리 숫자를 입력하세요."
 )
 
-func main() {
-	// Make number for play
+func startGame() int {
 	gameNum := makeNumber()
 	fmt.Println("Game Start!", gameNum)
 	fmt.Println(msgInput)
+
 	for {
 		// get input from player
 		inputNum := getInputNumber()
-
-		// check result
 		strike, ball := checkResult(inputNum, gameNum)
 		if strike > 0 || ball > 0 {
 			if strike == 3 {
 				fmt.Println("You WIN!!")
-				break
+				return 1
 			} else {
 				fmt.Printf("%dS %dB\n", strike, ball)
 			}
 		} else {
 			fmt.Println("OUT!!")
+		}
+	}
+
+}
+
+func main() {
+	outloop:
+	for {
+		if gameOver := startGame(); gameOver == 1 {
+			fmt.Println("다른 게임을 시작하시겠습니까?\n1.네\n2.아니오")
+			for {
+				var restart int
+				if _, err := fmt.Scanln(&restart); err == nil {
+					if restart == 1 {
+						fmt.Println()
+						continue outloop
+					} else if restart == 2 {
+						fmt.Println("Game Over..")
+						break outloop
+					} else {
+						fmt.Println("다시 입력하세요.")
+					}
+				} else {
+					fmt.Println("다시 입력하세요.")
+				}
+			}
 		}
 	}
 }
@@ -98,7 +122,7 @@ outloop:
 func checkResult(inputNum [3]int, gameNum [3]int) (int, int) {
 	var strike int
 	var ball int
-	fmt.Println(inputNum, gameNum)
+	//fmt.Println(inputNum, gameNum)
 	for i, val := range inputNum {
 		for j, gameVal := range gameNum {
 			if i == j && val == gameVal {
