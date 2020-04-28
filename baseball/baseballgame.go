@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -11,7 +12,6 @@ func main() {
 	gameNum := makeNumber()
 	fmt.Println("Game Start!", gameNum)
 
-
 	// get input from player
 	inputNum := getInputNumber()
 
@@ -19,7 +19,6 @@ func main() {
 	showResult(inputNum)
 
 }
-
 
 func makeNumber() [3]int {
 	var gameNum [3]int
@@ -46,17 +45,41 @@ func checkIfUsableNum(num int, gameNum [3]int) bool {
 }
 
 func getInputNumber() [3]int {
-	var inputNum int
 	fmt.Println("숫자를 입력하세요.")
-	for{
+	var resultNum [3]int
+	var isOk bool
+	for {
+		var inputNum int
 		_, err := fmt.Scanf("%d", &inputNum)
+
 		if err != nil {
+			isOk, resultNum = validateInput(inputNum)
+			if isOk {
+				break
+			}
 			fmt.Println("inputNum=", inputNum)
-			break
+		} else {
+			log.Print(err)
 		}
 	}
-	var resultNum [3]int
+
 	return resultNum
+}
+
+func validateInput(inputNum int) (bool, [3]int) {
+	var resultNum [3]int
+	if 0 < inputNum && inputNum <= 999 {
+		i := 0
+		for inputNum > 9 {
+			resultNum[i] %= 10
+			inputNum /= 10
+			i++
+		}
+		return true, resultNum
+	} else {
+		fmt.Println("잘못 입력하셨습니다.")
+		return false, resultNum
+	}
 }
 
 func showResult(inputNum [3]int) {
