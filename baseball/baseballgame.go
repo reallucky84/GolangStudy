@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
 const (
-	errorMsgInput     = "0~9 사이의 겹치지않는 3자리 숫자를 입력하세요."
+	msgInput          = "0~9 사이의 겹치지않는 3자리 숫자를 입력하세요."
 	errorMsgWrong     = "잘못 입력하셨습니다."
 	errorMsgDuplicate = "겹치지않는 3자리 숫자를 입력하세요."
 )
@@ -17,13 +16,24 @@ func main() {
 	// Make number for play
 	gameNum := makeNumber()
 	fmt.Println("Game Start!", gameNum)
+	fmt.Println(msgInput)
+	for {
+		// get input from player
+		inputNum := getInputNumber()
 
-	// get input from player
-	inputNum := getInputNumber()
-
-	// show result
-	showResult(inputNum)
-
+		// check result
+		strike, ball := checkResult(inputNum, gameNum)
+		if strike > 0 || ball > 0 {
+			if strike == 3 {
+				fmt.Println("You WIN!!")
+				break
+			} else {
+				fmt.Printf("%dS %dB\n", strike, ball)
+			}
+		} else {
+			fmt.Println("OUT!!")
+		}
+	}
 }
 
 func makeNumber() [3]int {
@@ -51,8 +61,7 @@ func checkIfUsableNum(num int, gameNum [3]int) bool {
 }
 
 func getInputNumber() [3]int {
-	fmt.Println(errorMsgInput)
-	var resultNum [3]int
+	var resultNum = [3]int{-1, -1, -1}
 
 outloop:
 	for {
@@ -69,34 +78,36 @@ outloop:
 			continue
 		}
 
-		inputNum, err := strconv.Atoi(input)
-		if err != nil {
-			fmt.Println(errorMsgWrong)
-			continue
-		}
-
-		if 0 < inputNum && inputNum <= 999 {
-			i := 0
-			for inputNum > 0 {
-				tmpNum := inputNum % 10
-				if !checkIfUsableNum(tmpNum, resultNum) {
+		for i, val := range input {
+			if tmp := int(val) - '0'; -1 < tmp && tmp < 10 {
+				if !checkIfUsableNum(tmp, resultNum) {
 					fmt.Println(errorMsgDuplicate)
 					continue outloop
 				}
-				resultNum[i] = tmpNum
-				inputNum /= 10
-				i++
+				resultNum[i] = tmp
+			} else {
+				fmt.Println(errorMsgWrong)
+				continue outloop
 			}
-			resultNum[0], resultNum[2] = resultNum[2], resultNum[0]
-			break
-		} else {
-			fmt.Println(errorMsgDuplicate)
 		}
+		break
 	}
 	return resultNum
 }
 
-func showResult(inputNum [3]int) {
+func checkResult(inputNum [3]int, gameNum [3]int) (int, int) {
+	var strike int
+	var ball int
+	fmt.Println(inputNum, gameNum)
+	for i, val := range inputNum {
+		for j, gameVal := range gameNum {
+			if i == j && val == gameVal {
+				strike++
+			} else if i != j && val == gameVal {
+				ball++
+			}
+		}
+	}
 
-	fmt.Println("inputNum=", inputNum)
+	return strike, ball
 }
