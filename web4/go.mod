@@ -1,4 +1,4 @@
-module github.com/reallycky84/GolangStudy
+module github.com/reallycky84/GolangStudy/web4
 
 go 1.14
 
